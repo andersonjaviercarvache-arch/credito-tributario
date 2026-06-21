@@ -8,15 +8,16 @@ st.title("🧾 Analizador de Comprobantes SRI")
 st.write("Sube tu archivo de reportes para calcular el IVA.")
 
 # 1. Carga de archivo
-uploaded_file = st.file_uploader("Sube tu archivo (.csv o .xlsx)", type=["csv", "xlsx", "txt"])
+uploaded_file = st.file_uploader("Sube tu archivo (.csv o .xlsx o .txt)", type=["csv", "xlsx", "txt"])
 
 if uploaded_file is not None:
     try:
-        # SOLUCIÓN: Agregamos dtype=str para que lea las claves de acceso de 49 dígitos como texto
+        # SOLUCIÓN: Agregamos encoding='latin1' para leer correctamente las tildes y las ñ
         if uploaded_file.name.endswith('.csv'):
-            df = pd.read_csv(uploaded_file, sep=None, engine='python', dtype=str)
+            df = pd.read_csv(uploaded_file, sep=None, engine='python', dtype=str, encoding='latin1')
         elif uploaded_file.name.endswith('.txt'):
-            df = pd.read_csv(uploaded_file, sep='\t', dtype=str)
+            # Los archivos del SRI en .txt suelen estar separados por tabulaciones (\t)
+            df = pd.read_csv(uploaded_file, sep='\t', dtype=str, encoding='latin1')
         else:
             df = pd.read_excel(uploaded_file, dtype=str)
 
@@ -32,7 +33,6 @@ if uploaded_file is not None:
             nombre_col_iva = df.columns[indices[0]]
             
             # Limpieza: Convertir la columna de IVA de texto a número
-            # Primero quitamos símbolos de dólar o espacios si existen
             df[nombre_col_iva] = df[nombre_col_iva].astype(str).str.replace('$', '', regex=False)
             df[nombre_col_iva] = df[nombre_col_iva].str.replace(',', '.', regex=False)
             
